@@ -15,7 +15,7 @@ import { join } from 'path';
     }),
     // Configuración de la Base de Datos SQLite
     TypeOrmModule.forRoot({
-      type: 'sqlite',
+      type: 'better-sqlite3',
       database: 'database.sqlite',
       autoLoadEntities: true, // Carga las entidades automáticamente sin declararlas una por una
       synchronize: true, // Sincroniza la DB con tus entidades (ideal para desarrollo local)
