@@ -13,6 +13,10 @@ import { TasksModule } from './tasks/tasks.module';
       // Generará el esquema automáticamente en esta ruta
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
+      // Evita que Apollo filtre el stack trace en las extensions del error,
+      // incluso fuera de NODE_ENV=production; el detalle tecnico ya queda
+      // registrado por GraphQLExceptionFilter via Logger.
+      includeStacktraceInErrorResponses: false,
     }),
     // Configuración de la Base de Datos SQLite
     TypeOrmModule.forRoot({
