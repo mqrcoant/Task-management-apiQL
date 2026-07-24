@@ -45,12 +45,17 @@ export class TasksService {
   }
 
   /**
-   * Crea y persiste una nueva tarea con estado inicial `PENDING`.
+   * Crea y persiste una nueva tarea con estado inicial `BACKLOG`.
+   * Si no se reciben etiquetas, la tarea se crea con un arreglo vacio en
+   * lugar de dejar el campo sin definir.
    * @param input Datos de la tarea a crear.
    * @returns La tarea creada, ya con `id` y fechas asignadas.
    */
   async create(input: CreateTaskInput): Promise<Task> {
-    const task = this.taskRepository.create(input);
+    const task = this.taskRepository.create({
+      ...input,
+      tags: input.tags ?? [],
+    });
 
     return this.taskRepository.save(task);
   }
@@ -58,7 +63,10 @@ export class TasksService {
   /**
    * Actualiza los campos recibidos de una tarea existente.
    * El `id` presente en el input se descarta a favor del parametro `id`, de
-   * modo que nunca se reasigna la clave primaria.
+   * modo que nunca se reasigna la clave primaria. Los campos declarados en el
+   * input pero no enviados por el cliente llegan como `undefined`, por lo que
+   * se filtran antes de mezclarlos: de lo contrario sobrescribirian con `null`
+   * valores que el cliente nunca quiso tocar.
    * @param id Identificador (UUID) de la tarea a actualizar.
    * @param input Campos a modificar; los omitidos conservan su valor actual.
    * @returns La tarea ya actualizada.
@@ -68,7 +76,11 @@ export class TasksService {
     const { id: _ignoredId, ...changes } = input;
     const task = await this.findOne(id);
 
-    Object.assign(task, changes);
+    for (const [field, value] of Object.entries(changes)) {
+      if (value !== undefined) {
+        task[field] = value;
+      }
+    }
 
     return this.taskRepository.save(task);
   }
